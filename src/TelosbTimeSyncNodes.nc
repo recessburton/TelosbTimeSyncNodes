@@ -23,5 +23,6 @@
 
 interface TelosbTimeSyncNodes{
 	command error_t Sync();
+	command uint32_t TelosbTimeSyncNodes.getTime();
 	event void SyncDone(uint32_t RealTime);
 }
