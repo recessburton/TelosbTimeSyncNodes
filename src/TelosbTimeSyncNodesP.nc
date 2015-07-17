@@ -101,6 +101,7 @@ implementation {
 			{
 				local_time = call BaseTime.get();
 				offset = btrpkg->realtime - call BaseTime.get();
+				signal Timer0.fired();			//马上发布同步信息
 			}
 			else {
 				;
