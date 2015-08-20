@@ -30,7 +30,7 @@ generic configuration TimeSyncTreeC( uint32_t period ) {
 
 implementation {
 
-	components TimeSyncTreeP;
+	components new TimeSyncTreeP(period);
 
 	TimeSyncTree = TimeSyncTreeP.TimeSyncTree;
 
@@ -41,13 +41,13 @@ implementation {
 	components HilTimerMilliC as LocalTimer;
 	TimeSyncTreeP.LocalTime -> LocalTimer;
 			
-	components new AMSenderC(AM_TIMESYNCMSG);
-	components new AMReceiverC(AM_TIMESYNCMSG);
+	components new AMSenderC(AM_TIME_SYNC_MSG);
+	components new AMReceiverC(AM_TIME_SYNC_MSG);
 
 	TimeSyncTreeP.Packet   -> AMSenderC;
 	TimeSyncTreeP.AMSend   -> AMSenderC;
 	TimeSyncTreeP.Receive  -> AMReceiverC;
 
 	components RandomC;
-	TimeSyncTree.Random -> RandomC;
+	TimeSyncTreeP.Random -> RandomC;
 }

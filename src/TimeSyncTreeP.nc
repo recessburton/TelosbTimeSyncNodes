@@ -32,11 +32,11 @@ generic module TimeSyncTreeP( uint32_t period ) {
 	uses interface Timer<TMilli> as PeriodicSyncTimer; 
 	uses interface Timer<TMilli> as DelayedBroadcastTimer;
 	uses interface LocalTime<TMilli> as LocalTime;  
-	uses interface Packet as Packet;
-	uses interface AMSend as AMSend;
+	uses interface Packet;
+	uses interface AMSend;
 	uses interface Receive;	
 
-	uses interface Random as Random;
+	uses interface Random;
 }
 implementation {
 
@@ -80,7 +80,7 @@ implementation {
 				btrpkt->depth      = depth;
 				btrpkt->globalTime = call LocalTime.get();
 
-				if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(time_sync_msg_t) == SUCCESS ) {
+				if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(time_sync_msg_t) == SUCCESS)){
 					radioBusy = TRUE;
 				} else {
 
@@ -90,7 +90,7 @@ implementation {
 	}
 
 	event void AMSend.sendDone( message_t * msg, error_t error ) {
-		if( err == SUCCESS && msg == &pkt ) {
+		if( error == SUCCESS && msg == &pkt ) {
 			radioBusy = FALSE;
 			if( TOS_NODE_ID == SINK_NODE ) {
 				signal TimeSyncTree.startTimeSyncDone( call LocalTime.get() );	
@@ -103,16 +103,16 @@ implementation {
 	* will discard the received time sync messages directly, without any further 
 	* processing.
 	**/
-	event message_t * Receive.receive(message_t * msg, void * playload, uint8_t len) {
+	event message_t * Receive.receive(message_t * msg, void * playload, uint8_t len){
+		time_sync_msg_t * btrpkg = (time_sync_msg_t*) playload;
 		if( TOS_NODE_ID != SINK_NODE && len == sizeof(time_sync_msg_t) ) {
-			time_sync_msg_t * btrpkg = (time_sync_msg_t*) playload;
 
 			if( parent == btrpkg->nid ) {// receive a packet sent by the parent
 				offset = btrpkg->globalTime - (call LocalTime.get() );
 				timeSyncNum++;
 				post broadcastTimeSyncMsg(); // to broadcast the time updated right now
 			} else {
-				if( btrpkg->depth + 1 < depth) ) {
+				if( btrpkg->depth + 1 < depth) {
 					depth  = btrpkg->depth + 1;
 					parent = btrpkg->nid;
 					post broadcastTimeSyncMsg();
@@ -136,8 +136,8 @@ implementation {
 	}
 
 	event void DelayedBroadcastTimer.fired() {
+		time_sync_msg_t* btrpkt = (time_sync_msg_t*) call Packet.getPayload(&pkt,sizeof(time_sync_msg_t));
 		if( !radioBusy ) {
-			time_sync_msg_t* btrpkt = (time_sync_msg_t*) call Packet.getPayload(  );
 			if( btrpkt != NULL ) {
 				btrpkt->nid   = TOS_NODE_ID;
 				btrpkt->depth = depth;
@@ -149,7 +149,7 @@ implementation {
 		}
 	}
 
-	command uint32_t getTimeSyncNum() {  return timeSyncNum;  }
+	command uint32_t TimeSyncTree.getTimeSyncNum() {  return timeSyncNum;  }
 	
 	command uint32_t TimeSyncTree.getNow() { return  (call LocalTime.get()) + offset;	}
 
